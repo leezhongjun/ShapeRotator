@@ -6,4 +6,4 @@
 
 - cube.py rotates a cude along x, y and z axes
 
-![](cube.gif)
+![cube.gif](cube.gif)
