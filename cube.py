@@ -58,7 +58,7 @@ def helper():
     sides = [abs(cubex), abs(cubey), abs(cubez)]
     index = max(range(len(sides)), key=lambda i: sides[i])
     normal = [0, 0, 0]
-    normal[index] = 1
+    normal[index] = 1 if cubex > 0 else -1 if cubex < 0 else 0
     cubex, cubey, cubez = normal
 
     # Rotate normal
