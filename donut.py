@@ -4,8 +4,8 @@ from math import cos, sin, pi
 
 
 # Screen constants
-screen_width = 35
-screen_height = 35
+screen_width = 45
+screen_height = 45
 frames = 300
 
 # Shape constants
@@ -91,6 +91,7 @@ for i in range(frames):
     print("\x1b[H")
 
     # Print output matrix
+    # Joining with newlines before printing prevents screen tearing
     print("\n".join("".join(output[i]) for i in range(screen_height)))
 
     # A and B are incremented together

@@ -4,15 +4,15 @@ from math import cos, sin, isclose
 ### Zoom out if animation is flickering ###
 
 # Screen constants
-screen_width = 80
-screen_height = 80
+screen_width = 45
+screen_height = 45
 frames = 3000
 
 # Shape constants
 R1 = 1  # Radius of circle
 R2 = 2  # Radius of rotation
 K2 = 5  # Distance of object from eye
-K1 = screen_width * K2 * 3 / (8 * (R1 + R2))  # Distance of eye from screen
+K1 = screen_width * K2 * 3 / (4 * (R1 + R2))  # Distance of eye from screen
 
 L = 1.5  # Cube length
 
@@ -27,6 +27,9 @@ A = B = phi = 1
 
 # Clear screen and return cursor to home position
 print("\x1b[2J")
+
+# Normal of current point
+normal = [0, 0, 0]
 
 
 def helper():
@@ -54,11 +57,7 @@ def helper():
     xp = int(screen_width / 2 + K1 * x * ooz)
     yp = int(screen_height / 2 - K1 * y * ooz)
 
-    # normal of cube is largest component of (x, y, z)
-    sides = [abs(cubex), abs(cubey), abs(cubez)]
-    index = max(range(len(sides)), key=lambda i: sides[i])
-    normal = [0, 0, 0]
-    normal[index] = 1 if cubex > 0 else -1 if cubex < 0 else 0
+    # Normal of current point in unrotated cube
     cubex, cubey, cubez = normal
 
     # Rotate normal
@@ -70,15 +69,15 @@ def helper():
     )
     z = cubey * sinA + cosA * (cubex * sinphi + cubez * cosphi)
 
-    # Luminance, calculated with -normal_x - 2 * normal_z
-    # since light source is at (1, 0, 2)
-    Lu = x + 2 * z
+    # Luminance, calculated with -normal_x - normal_z
+    # since light source is at (-1, 0, -1)
+    Lu = -x - z
 
     Lu = abs(Lu)
     # Check in z-buffer if there a pixel closer to the eye, with smaller z
     if ooz > zbuffer[xp][yp]:
         zbuffer[xp][yp] = ooz
-        luminance_index = Lu * 5.2  # L is not in the range 0..11 (5.2*sqrt(5) = 11.6)
+        luminance_index = Lu * 8  # L is not in the range 0..11 (8*sqrt(2) = 11.3)
 
         # Plot corresponding luminance
         output[xp][yp] = ".,-~:;=!*#$@"[int(luminance_index)]
@@ -105,6 +104,7 @@ for i in range(frames):
                 # Height, centred at (0, 0)
                 h = -L / 2
                 while isclose(h, L / 2) or h < L / 2:
+                    normal = [1, 0, 0] if isclose(w, L / 2) else [-1, 0, 0]
                     helper()
                     h += l_spacing
                 l += l_spacing
@@ -112,16 +112,28 @@ for i in range(frames):
             # Go only the edges
             l = -L / 2
             h = -L / 2
+
+            # h is -L/2
             while isclose(l, L / 2) or l < L / 2:
+                normal = [0, 0, -1]
                 helper()
                 l += l_spacing
+
+            # l is L/2
             while isclose(h, L / 2) or h < L / 2:
+                normal = [0, 1, 0]
                 helper()
                 h += l_spacing
+
+            # h is L/2
             while isclose(l, -L / 2) or l > -L / 2:
+                normal = [0, 0, 1]
                 helper()
                 l -= l_spacing
+
+            # l is -L/2
             while isclose(h, -L / 2) or h > -L / 2:
+                normal = [0, -1, 0]
                 helper()
                 h -= l_spacing
         w += l_spacing
@@ -130,6 +142,7 @@ for i in range(frames):
     print("\x1b[H")
 
     # Print output matrix
+    # Joining with newlines before printing prevents screen tearing
     print("\n".join("".join(output[i]) for i in range(screen_height)))
 
     # A, B and phi are incremented together
